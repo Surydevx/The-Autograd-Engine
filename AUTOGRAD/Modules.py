@@ -46,9 +46,10 @@ class Module:
         """Loads state_dict from a JSON file."""
 
         load_path = os.path.expanduser(path_name)
-        os.makedirs(load_path, exist_ok=True)    
-        load_path = os.path.join(load_path, filename)  
-        
+        load_path = os.path.join(load_path, filename)
+        if not os.path.isfile(load_path):
+            print(f"Warning: Cannot load weights. '{load_path}' does not exist. Keeping random initialization.")
+            return        
         with open(load_path, 'r') as f:
             state = json.load(f)
         self.load_state_dict(state)
@@ -62,6 +63,9 @@ class Neuron(Module):
         self.activation = activation
 
     def __call__(self, x):
+        x = [x] if isinstance(x, (int, float, Value)) else x
+        if len(x) != len(self.w):
+            raise ValueError(f"Shape mismatch: Expected {len(self.w)} inputs, got {len(x)}")
         act = sum((wi * xi for wi, xi in zip(self.w, x)), self.b)
 
         if self.activation == 'relu':
@@ -93,6 +97,7 @@ class Layer(Module):
 class MLP(Module):
     """Multi-Layer Perceptron"""
     def __init__(self, n_in, n_outs):
+        n_outs = [n_outs] if isinstance(n_outs, int) else n_outs
         sizes = [n_in] + n_outs
         
         self.layers = []
@@ -118,6 +123,9 @@ class LinearRegression(Module):
         self.b = Value(0.0)
 
     def __call__(self, x):
+        x = [x] if isinstance(x, (int, float, Value)) else x
+        if len(x) != len(self.w):
+            raise ValueError(f"Shape mismatch: Expected {len(self.w)} inputs, got {len(x)}")
         return sum((wi * xi for wi, xi in zip(self.w, x)), self.b)
 
     def parameters(self):
@@ -133,6 +141,9 @@ class LogisticRegression(Module):
         self.b = Value(0.0)
 
     def __call__(self, x):
+        x = [x] if isinstance(x, (int, float, Value)) else x
+        if len(x) != len(self.w):
+            raise ValueError(f"Shape mismatch: Expected {len(self.w)} inputs, got {len(x)}")
         logit = sum((wi * xi for wi, xi in zip(self.w, x)), self.b)        
         return logit # it returns raw logit, in bce_loss under utils.py we would impose sigmoid function on it.
 
