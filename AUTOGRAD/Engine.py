@@ -45,7 +45,6 @@ class Value:
             output_data = self.data ** other.data
             if isinstance(output_data, complex):
                 output_data = float('nan')
-
         except (ZeroDivisionError, ValueError):
             output_data = float('nan') 
 
@@ -55,15 +54,22 @@ class Value:
             if self.data == 0 and (other.data - 1) < 0:
                 pass 
             else:
-                self.gradient += other.data * (self.data ** (other.data - 1)) * output_object.gradient
+                grad_val = other.data * (self.data ** (other.data - 1))
+                if isinstance(grad_val, complex):
+                    grad_val = grad_val.real
+                self.gradient += grad_val * output_object.gradient
+                
             if self.data > 0:
-                other.gradient += (self.data ** other.data) * math.log(self.data) * output_object.gradient
+                other_grad = (self.data ** other.data) * math.log(self.data)
+                if isinstance(other_grad, complex):
+                    other_grad = other_grad.real
+                other.gradient += other_grad * output_object.gradient
 
         output_object._backward = _backward
         return output_object
 
     def exp(self): # exponential functiona as e^x
-        x = self.data
+        x = max(min(self.data, 700), -700)    # prevents OverFlowError    
         output_data = math.exp(x)
         output_object = Value(output_data, (self,), "exp")
 
@@ -108,11 +114,13 @@ class Value:
 
     def log(self):
         x = self.data
-        output_data = math.log(x)
+        epsilon = 1e-8
+        output_data = math.log(x + epsilon if x >= 0 else epsilon)
+        
         output_object = Value(output_data, (self,), "log")
     
         def _backward():
-            self.gradient += (1.0 / x) * output_object.gradient
+            self.gradient += (1.0 / (x + epsilon)) * output_object.gradient
 
         output_object._backward = _backward
         return output_object
@@ -120,12 +128,15 @@ class Value:
     
     def sigmoid(self):
         x = self.data
-        output_data = 1.0 / (1.0 + math.exp(-x))
+        if x >= 0:
+            output_data = 1.0 / (1.0 + math.exp(-x))
+        else:
+            exp_x = math.exp(x)
+            output_data = exp_x / (1.0 + exp_x)
+            
         output_object = Value(output_data, (self,), "sigmoid")
 
         def _backward():
-            # dL/dx = dL/dout * dout/dx
-            # dout/dx = out_object.data * (1.0 - output_object.data)
             local_gradient = output_object.data * (1.0 - output_object.data)
             self.gradient += local_gradient * output_object.gradient
 
@@ -147,19 +158,21 @@ class Value:
     def backward(self):
         topo = []
         visited = set()
-        
-        def build_topo(v):
-            if v not in visited:
-                visited.add(v)
-                for child in v._previous:
-                    build_topo(child)
+        stack = [(self, False)]
+        while stack:
+            v, is_expanded = stack.pop()
+            if not is_expanded:
+                if v not in visited:
+                    visited.add(v)
+                    stack.append((v, True))
+                    for child in v._previous:
+                        stack.append((child, False))
+            else:
                 topo.append(v)
-                
-        build_topo(self)
-
         self.gradient = 1.0
         for v in reversed(topo):
             v._backward()
+
 # some additional operations.
     def __neg__(self):
         return self * -1

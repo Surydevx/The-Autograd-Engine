@@ -163,7 +163,7 @@ def main():
         print(f"Initializing Logistic Regression ({input_features} inputs)")
         model = Modules.LogisticRegression(input_features)
     elif args.model == "linear":
-        print(f"Initializing Logistic Regression ({input_features} inputs)")
+        print(f"Initializing Linear Regression ({input_features} inputs)")
         model = Modules.LinearRegression(input_features)
     else:
         layer_sizes = args.hidden + [1]
