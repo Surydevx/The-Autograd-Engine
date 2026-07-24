@@ -17,7 +17,7 @@ def render_graph(json_file="Model/telemetry.json", output_name="computational_gr
     edges = graph_data.get('edges', [])
     
     print(f"Found {len(nodes)} nodes and {len(edges)} edges. Drawing...")
-    dot = Digraph(format='png', graph_attr={'rankdir': 'LR'})
+    dot = Digraph(format='svg', graph_attr={'rankdir': 'LR'})
 
     for node in nodes:
         uid = node['id']

@@ -105,10 +105,10 @@ def train_and_plot(model, xs, ys, args):
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
         
-        save_dir = os.path.expanduser("~/Model")
+        save_dir = os.path.expanduser("Model")
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, 'training_loss.png')
-        plt.savefig(save_path)
+        save_path = os.path.join(save_dir, 'training.svg')
+        plt.savefig(save_path, format ="svg", bbox_inches = "tight", pad_inches=0.1)
         print(f"Graph saved to {save_path}")
 
     if args.save_weights:
