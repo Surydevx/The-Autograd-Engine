@@ -1,8 +1,8 @@
 import os
 import csv
 import json
+
 from AUTOGRAD.Engine import Value
-from pathlib import Path  
 
 path_name = "Model"
 
@@ -14,7 +14,7 @@ def bce_loss(predictions, targets):
     """Binary Cross-Entropy Loss for Classification with Sigmoid."""
     total_loss = Value(0.0)
     for p, y in zip(predictions, targets):
-        p_sig = Value(1.0) / (Value(1.0) + (p * Value(-1.0)).exp())
+        p_sig = p.sigmoid()
         epsilon = Value(1e-5)
         term1 = Value(y) * (p_sig + epsilon).log()
         term2 = Value(1.0 - y) * (Value(1.0) - p_sig + epsilon).log()
@@ -46,7 +46,7 @@ def categorical_cross_entropy(logits_list, target_indices):
         exp_logits = [(l - Value(max_logit)).exp() for l in logits]
         sum_exp = sum(exp_logits, Value(0.0))
         probabilities = [e / sum_exp for e in exp_logits]
-        correct_prob = probabilities[target_idx]# implementtaion of softmax function.
+        correct_prob = probabilities[int(target_idx)]# implementtaion of softmax function.
         
         # Added epsilon to prevent log(0)
         epsilon = Value(1e-5)
@@ -95,7 +95,7 @@ def l1_loss(predictions, targets):
 def load_csv(filepath):
     """Loads the dataset from a CSV file assuming the last column is the target label."""
     xs, ys = [], []
-    path = Path(filepath).expanduser()
+    path = os.path.expanduser(filepath)
     try:
         with open(path, 'r') as f:
             reader = csv.reader(f)
@@ -111,7 +111,7 @@ def load_csv(filepath):
         
     except FileNotFoundError:
         print(f"Error: '{path}' not found. Falling back to default dataset.")
-        return None, None
+        return [], []
 
 # =========================================================================================
 # Telemetry

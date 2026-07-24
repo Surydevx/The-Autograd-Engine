@@ -70,11 +70,9 @@ def train_and_plot(model, xs, ys, args):
             if k % 10 == 0 or k == args.epochs - 1:
                 table.add_row(f"{k}", f"{loss.data:.4f}", f"{accuracy:.1f}%")
                 
-            # --- Early Stopping Logic ---
-            min_delta = 1e-4  # 0.0001
+            min_delta = 1e-4
             
             if args.patience > 0:
-                # FIX: Must improve by at least min_delta!
                 if loss.data < (best_loss - min_delta):
                     best_loss = loss.data
                     trigger_times = 0
@@ -87,7 +85,6 @@ def train_and_plot(model, xs, ys, args):
                     table.add_row(f"{k} (STOP)", f"{loss.data:.4f}", f"{accuracy:.1f}%", style="bold red")
                     break
 
-    # Once the table is finished drawing, print the early stopping result
     if stopped_epoch is not None:
         print(f"\n Early stopping triggered at epoch {stopped_epoch}!")
         print(f"Rewinding model weights to best epoch (Loss: {best_loss:.4f})")
