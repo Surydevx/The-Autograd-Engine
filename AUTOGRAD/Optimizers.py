@@ -3,7 +3,7 @@ class Optimizer:
     Base class for all optimizers.
     """
     def __init__(self, parameters):
-        self.parameters = parameters
+        self.parameters = list(parameters) # Add's support for generator expressions
 
     def zero_grad(self):
         """Resets the gradients of all parameters to zero."""
@@ -24,7 +24,7 @@ class SGD(Optimizer):
         self.learning_rate = learning_rate
         self.momentum = momentum
         self.weight_decay = weight_decay        
-        self.v = [0.0] * len(parameters)
+        self.v = [0.0] * len(self.parameters)
             
     def step(self):
         for i, p in enumerate(self.parameters):
@@ -53,7 +53,7 @@ class RMSprop(Optimizer):
         self.weight_decay = weight_decay
         
         #moving average of squared gradients
-        self.v = [0.0] * len(parameters)
+        self.v = [0.0] * len(self.parameters)
 
     def step(self):
         for i, p in enumerate(self.parameters):
@@ -79,9 +79,9 @@ class Adam(Optimizer):
         self.beta_2 = beta_2
         self.epsilon = epsilon
         
-        self.m = [0.0] * len(parameters)
-        self.v = [0.0] * len(parameters)
-        self.t = 0 
+        self.m = [0.0] * len(self.parameters)
+        self.v = [0.0] * len(self.parameters)
+        self.t = 0
             
     def step(self):
         self.t += 1
@@ -107,8 +107,8 @@ class AdamW(Optimizer):
         self.epsilon = epsilon
         self.weight_decay = weight_decay
         
-        self.m = [0.0] * len(parameters)
-        self.v = [0.0] * len(parameters)
+        self.m = [0.0] * len(self.parameters)
+        self.v = [0.0] * len(self.parameters)
         self.t = 0 
             
     def step(self):
