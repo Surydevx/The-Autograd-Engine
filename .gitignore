@@ -1,0 +1,32 @@
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Distribution & Build Artifacts
+build/
+devel/
+dist/
+*.egg-info/
+.eggs/
+
+# ide
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# generated Output & artifacts
+Model/
+*.png
+*.pdf
+*.gv
+*.dot
+
+# Keep .gitignore tracked!
+!.gitignore
