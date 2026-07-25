@@ -1,6 +1,7 @@
 import random
+import os
 
-import Utils
+from AUTOGRAD import Utils
 
 def load_and_prep_data(filepath, shuffle_initial=False):
     """
@@ -11,6 +12,10 @@ def load_and_prep_data(filepath, shuffle_initial=False):
         print("[Data Engine]: No filepath provided. Using default OR Gate fallback.")
         xs = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]
         ys = [0.0, 1.0, 1.0, 1.0]
+        
+    elif  not os.path.isfile(filepath):
+        raise FileNotFoundError(f"[Data Engine]: NO dataset exists at '{filepath}'")
+
     else:
         print(f"[Data Engine]: Ingesting dataset from {filepath}...")
         xs, ys = Utils.load_csv(filepath)

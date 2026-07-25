@@ -183,7 +183,7 @@ def main():
     
     # data management args
     parser.add_argument("--shuffle_initial", action="store_true", help="Shuffle dataset once upon loading via data_procs_engine")
-    parser.add_argument("--train_ratio", type=float, default=0.8, help="Ratio of data for training (e.g. 0.8 = 80% train)")
+    parser.add_argument("--train_ratio", type=float, default=0.8, help="Ratio of data for training (e.g. 0.8 = 80%% train)")
     parser.add_argument("--shuffle_per_epoch", action="store_true", help="Dynamically reshuffle training set every epoch")
     
     # architecture args
