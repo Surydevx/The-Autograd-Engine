@@ -13,7 +13,7 @@ def train_and_plot(model, xs, ys, args):
     losses = []
     loss = None
     
-    # --- Early Stopping Trackers ---
+    # Early Stopping logic
     best_loss = float('inf')
     trigger_times = 0
     best_weights = None
@@ -31,22 +31,29 @@ def train_and_plot(model, xs, ys, args):
     else:
         optimizer = Optimizers.SGD(params, learning_rate=lr, momentum=args.momentum, weight_decay=args.weight_decay)
     
+    metric_name = "MAE" if args.loss in ["mse", "l1"] else "Accuracy"
+    
     table = Table(title=f"Training ({args.model.upper()} | {args.loss.upper()} | {args.opt.upper()})")
     table.add_column("Epoch", justify="right", style="cyan")
     table.add_column("Loss", justify="right", style="magenta")
-    table.add_column("Accuracy", justify="right", style="green")
+    table.add_column(metric_name, justify="right", style="green")
 
     with Live(table, refresh_per_second=10):
         for k in range(args.epochs):
             ypred = []
             for x in xs:
                 out = model(x)
-                ypred.append(out[0] if isinstance(out, list) else out)
+                # CCE requires the full list of output logits, other loss functions just need the scalar
+                if args.loss == "cce":
+                    ypred.append(out)
+                else:
+                    ypred.append(out[0] if isinstance(out, list) else out)
                 
             if args.loss == "mse": loss = Utils.mse_loss(ypred, ys)
             elif args.loss == "bce": loss = Utils.bce_loss(ypred, ys)
             elif args.loss == "hinge": loss = Utils.hinge_loss(ypred, ys)
             elif args.loss == "l1": loss = Utils.l1_loss(ypred, ys)
+            elif args.loss == "cce": loss = Utils.categorical_cross_entropy(ypred, ys)
                 
             losses.append(loss.data)
             
@@ -54,21 +61,33 @@ def train_and_plot(model, xs, ys, args):
             loss.backward()
             optimizer.step()
             
-            correct = 0
-            for p, y in zip(ypred, ys):
-                if p.data >= 0:
-                    prob = 1.0 / (1.0 + math.exp(-p.data))
-                else:
-                    z = math.exp(p.data) 
-                    prob = z / (1.0 + z)
-    
-                if (prob >= args.threshold) == (y >= 0.5):
-                    correct += 1
-                    
-            accuracy = (correct / len(ys)) * 100
+            if args.loss in ["mse", "l1"]:
+                # calculate mean absolute arror
+                current_metric = sum(abs(p.data - y) for p, y in zip(ypred, ys)) / len(ys)
+                metric_str = f"{current_metric:.4f}"
+            else:
+                # calculate accuracy
+                correct = 0
+                for p, y in zip(ypred, ys):
+                    if args.loss == "hinge":
+                        if (p.data > 0) == (y > 0): correct += 1
+                    elif args.loss == "cce":
+                        pred_class = max(range(len(p)), key=lambda i: p[i].data)
+                        if pred_class == int(y): correct += 1
+                    else:
+                        # BCE
+                        if p.data >= 0:
+                            prob = 1.0 / (1.0 + math.exp(-p.data))
+                        else:
+                            z = math.exp(p.data) 
+                            prob = z / (1.0 + z)
+                        if (prob >= args.threshold) == (y >= 0.5): correct += 1
+                        
+                current_metric = (correct / len(ys)) * 100
+                metric_str = f"{current_metric:.1f}%"
             
             if k % 10 == 0 or k == args.epochs - 1:
-                table.add_row(f"{k}", f"{loss.data:.4f}", f"{accuracy:.1f}%")
+                table.add_row(f"{k}", f"{loss.data:.4f}", metric_str)
                 
             min_delta = 1e-4
             
@@ -82,7 +101,7 @@ def train_and_plot(model, xs, ys, args):
                     
                 if trigger_times >= args.patience:
                     stopped_epoch = k
-                    table.add_row(f"{k} (STOP)", f"{loss.data:.4f}", f"{accuracy:.1f}%", style="bold red")
+                    table.add_row(f"{k} (STOP)", f"{loss.data:.4f}", metric_str, style="bold red")
                     break
 
     if stopped_epoch is not None:
@@ -106,6 +125,7 @@ def train_and_plot(model, xs, ys, args):
         os.makedirs(save_dir, exist_ok=True)
         save_path = os.path.join(save_dir, 'training.svg')
         plt.savefig(save_path, format ="svg", bbox_inches = "tight", pad_inches=0.1)
+        plt.close()
         print(f"Graph saved to {save_path}")
 
     if args.save_weights:
@@ -129,13 +149,15 @@ def main():
     parser.add_argument("--save_weights", type = str,default = None , help="Save model weights")
     parser.add_argument("--load_weights", type=str, default = None, help="Path to load weights")
     parser.add_argument("--patience", type=int, default=10, help="Epochs to wait for improvement before stopping (0 to disable)")
+    
     # Architecture Args
     parser.add_argument("--model", type=str, choices=["mlp", "logistic", "linear"], default="mlp", help="Model architecture")
     parser.add_argument("--hidden", type=int, nargs="+", default=[4], help="Hidden layer sizes for MLP (e.g. --hidden 4 4)")
     
     # Optimizer & Loss Args
     parser.add_argument("--opt", type=str, choices=["sgd", "adam", "adamw", "rmsprop"], default="adam", help="Optimizer choice")
-    parser.add_argument("--loss", type=str, choices=["mse", "bce", "hinge", "l1"], default="bce", help="Loss function")
+    parser.add_argument("--loss", type=str, choices=["mse", "bce", "hinge", "l1", "cce"], default="bce", help="Loss function")
+    parser.add_argument("--classes", type=int, default=3, help="Number of classes (only used for CCE)")
     parser.add_argument("--momentum", type=float, default=0.0, help="Momentum for SGD")
     parser.add_argument("--weight_decay", type=float, default=0.0, help="L2 Penalty for SGD/AdamW")
 
@@ -153,6 +175,10 @@ def main():
         print("Using default logic gate dataset (OR Gate)...")
         xs = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]
         ys = [0.0, 1.0, 1.0, 1.0]
+
+    if args.loss == "hinge":
+        ys = [1.0 if y > 0.5 else -1.0 for y in ys]
+        print("Remapped targets to +1 / -1 for Hinge Loss.")
         
     input_features = len(xs[0])
     
@@ -163,7 +189,8 @@ def main():
         print(f"Initializing Linear Regression ({input_features} inputs)")
         model = Modules.LinearRegression(input_features)
     else:
-        layer_sizes = args.hidden + [1]
+        output_size = args.classes if args.loss == "cce" else 1
+        layer_sizes = args.hidden + [output_size]
         print(f"Initializing MLP with layers: [{input_features}] -> {layer_sizes}")
         model = Modules.MLP(input_features, layer_sizes)
 
@@ -176,5 +203,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-### phewwwwwwwwwwwwww, i need a break *_*
