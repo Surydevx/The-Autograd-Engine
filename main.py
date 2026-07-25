@@ -10,6 +10,9 @@ import copy
 from AUTOGRAD import Utils, Modules, Optimizers
 from AUTOGRAD import data_procs_engine
 
+import sys
+sys.setrecursionlimit(10000) # this is needed for proper graph generation, will fix it next ver.
+
 def train_and_plot(model, X_train, y_train, X_val, y_val, args):
     """Trains the model and plots the train/val loss and accuracy curves."""
     train_losses = []
