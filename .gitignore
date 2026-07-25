@@ -3,12 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual Environment
+# virtual env
 .venv/
 venv/
 ENV/
 
-# Distribution & Build Artifacts
+# artifacts
 build/
 devel/
 dist/
@@ -21,12 +21,15 @@ dist/
 *.swp
 *.swo
 
-# generated Output & artifacts
+# generated output & artifacts
 Model/
 *.png
 *.pdf
 *.gv
 *.dot
 
-# Keep .gitignore tracked!
+# .gitignore is not ignored
 !.gitignore
+
+# Folders used for testing
+ARCHIVE
