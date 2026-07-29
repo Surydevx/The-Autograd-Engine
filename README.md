@@ -25,22 +25,38 @@ This project implements a reverse-mode automatic differentiation engine over dyn
 ## Project Structure
 
 ```bash
+
 ├── AUTOGRAD
 │   ├── data_procs_engine.py
 │   ├── Engine.py
 │   ├── Modules.py
 │   ├── Optimizers.py
 │   ├── __pycache__
+│   │   ├── data_procs_engine.cpython-314.pyc
+│   │   ├── Engine.cpython-314.pyc
+│   │   ├── Modules.cpython-314.pyc
+│   │   ├── Optimizers.cpython-314.pyc
+│   │   ├── test_Engine.cpython-314-pytest-9.1.1.pyc
+│   │   └── Utils.cpython-314.pyc
 │   ├── test_Engine.py
 │   └── Utils.py
-├── dag_visualizer.py 
+├── dag_visualizer.py
+├── Downloaded Data # All the unprocessed data sits here
+│   └── heart.csv
 ├── main.py
-├── Model
+├── Model # All the data and artifacts generated at runtime of programme is stored in this directory.
+│   ├── computational_graph
 │   ├── computational_graph.svg
-│   ├── model_weights.json
+│   ├── model.json
 │   ├── telemetry.json
 │   └── training.svg
-├── Pre-processed_data
+├── Pre-processed_data # All the processed data sits here
+│   └── heart_clean.csv
+├── __pycache__
+│   ├── animate.cpython-314.pyc
+│   ├── Engine.cpython-314.pyc
+│   ├── shuffle_data.cpython-314.pyc
+│   └── test_Engine.cpython-314-pytest-9.1.1.pyc
 ├── pyproject.toml
 ├── README.md
 └── uv.lock
@@ -65,10 +81,10 @@ This project implements a reverse-mode automatic differentiation engine over dyn
 
 ---
 
-## 📊 Benchmarks & Stress Testing
+## Benchmarks & Stress Testing
 
 ```Bash
-❯ python main.py --data Pre-processed_data/heart_clean.csv --model mlp --hidden 16 16 --epochs 100 --batch_size 32 --opt adamw --lr 0.01 --loss bce --visualize --shuffle_per_epoch --save_weights model.json
+python main.py --data Pre-processed_data/heart_clean.csv --model mlp --hidden 16 16 --epochs 100 --batch_size 32 --opt adamw --lr 0.01 --loss bce --visualize --shuffle_per_epoch --save_weights model.json
 ========== The Autograd Engine ==========
 [Data Engine]: Ingesting dataset from Pre-processed_data/heart_clean.csv...
 Loaded 1024 samples from Pre-processed_data/heart_clean.csv
@@ -129,13 +145,13 @@ The topological map below captures a forward pass of a partial validation batch.
 
 Make sure you have Python 3.8+ installed, and [`Graphviz`](https://graphviz.org/download/) binary, along with [`uv`](https://docs.astral.sh/uv/#installation) in your local system:
 
-initilaize the virtual environment,
+Initilaize the virtual environment,
 
 ``` Bash
 source .venv/bin/activate
 ```
 
-sync the virtual environment using `uv` with command,
+Sync the virtual environment using `uv` with command,
 
 ```bash
 uv sync
@@ -148,7 +164,8 @@ You can train a network from the command line, customizing layers, batch sizes, 
 The CLI Environment supports following operations, if feeling unsure of what to do, run the following command.
 
 ```Bash
- python main.py --help 
+python main.py --help
+
 usage: main.py [-h] [--epochs EPOCHS] [--lr LR] [--batch_size BATCH_SIZE] [--data DATA] [--visualize] [--save_weights SAVE_WEIGHTS]
                [--load_weights LOAD_WEIGHTS] [--patience PATIENCE] [--shuffle_initial] [--train_ratio TRAIN_RATIO] [--shuffle_per_epoch]
                [--model {mlp,logistic,linear}] [--hidden HIDDEN [HIDDEN ...]] [--opt {sgd,adam,adamw,rmsprop}] [--loss {mse,bce,hinge,l1,cce}]
