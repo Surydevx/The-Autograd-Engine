@@ -2,6 +2,7 @@ import random
 import os
 
 from AUTOGRAD import Utils
+## This file loads the data and returns the feature and target values.
 
 def load_and_prep_data(filepath, shuffle_initial=False):
     """

@@ -10,14 +10,12 @@ import copy
 from AUTOGRAD import Utils, Modules, Optimizers
 from AUTOGRAD import data_procs_engine
 
-import sys
-sys.setrecursionlimit(10000) # this is needed for proper graph generation, will fix it next ver.
 
 def train_and_plot(model, X_train, y_train, X_val, y_val, args):
     """Trains the model and plots the train/val loss and accuracy curves."""
     train_losses = []
     val_losses = []
-    val_loss = None 
+    val_loss_node = None 
     
     # Early Stopping & Safety logic
     best_val_loss = float('inf')
@@ -46,50 +44,71 @@ def train_and_plot(model, X_train, y_train, X_val, y_val, args):
     table.add_column("Val Loss", justify="right", style="magenta")
     table.add_column(f"Val {metric_name}", justify="right", style="green")
 
-    def _run_pass(xs, ys, is_training=False):
-        ypred = []
-        for x in xs:
-            out = model(x)
-            if args.loss == "cce":
-                ypred.append(out)
-            else:
-                ypred.append(out[0] if isinstance(out, list) else out)
-                
-        if args.loss == "mse": loss = Utils.mse_loss(ypred, ys)
-        elif args.loss == "bce": loss = Utils.bce_loss(ypred, ys)
-        elif args.loss == "hinge": loss = Utils.hinge_loss(ypred, ys)
-        elif args.loss == "l1": loss = Utils.l1_loss(ypred, ys)
-        elif args.loss == "cce": loss = Utils.categorical_cross_entropy(ypred, ys)
+    def _run_epoch(xs, ys, is_training=False):
+        total_loss = 0.0
+        total_metric = 0.0
+        last_loss_node = None
+        
+        # Determine batch size (use full length if 0)
+        batch_size = args.batch_size if args.batch_size > 0 else len(xs)
+        
+        for i in range(0, len(xs), batch_size):
+            X_batch = xs[i:i+batch_size]
+            y_batch = ys[i:i+batch_size]
             
-        if is_training:
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            
-        if args.loss in ["mse", "l1"]:
-            current_metric = sum(abs(p.data - y) for p, y in zip(ypred, ys)) / len(ys)
-            metric_str = f"{current_metric:.4f}"
-        else:
-            correct = 0
-            for p, y in zip(ypred, ys):
-                if args.loss == "hinge":
-                    pred_label = 1.0 if p.data >= 0 else -1.0
-                    if pred_label == y: correct += 1
-                elif args.loss == "cce":
-                    pred_class = max(range(len(p)), key=lambda i: p[i].data)
-                    if pred_class == int(y): correct += 1
+            ypred = []
+            for x in X_batch:
+                out = model(x)
+                if args.loss == "cce":
+                    ypred.append(out)
                 else:
-                    if p.data >= 0:
-                        prob = 1.0 / (1.0 + math.exp(-p.data))
-                    else:
-                        z = math.exp(p.data) 
-                        prob = z / (1.0 + z)
-                    if (prob >= args.threshold) == (y >= 0.5): correct += 1
+                    ypred.append(out[0] if isinstance(out, list) else out)
+                    
+            if args.loss == "mse": 
+                loss = Utils.mse_loss(ypred, y_batch)
+            elif args.loss == "bce": 
+                loss = Utils.bce_loss(ypred, y_batch)
+            elif args.loss == "hinge": 
+                loss = Utils.hinge_loss(ypred, y_batch)
+            elif args.loss == "l1": 
+                loss = Utils.l1_loss(ypred, y_batch)
+            elif args.loss == "cce": 
+                loss = Utils.categorical_cross_entropy(ypred, y_batch)
                 
-            current_metric = (correct / len(ys)) * 100
-            metric_str = f"{current_metric:.1f}%"
+            if is_training:
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                
+            last_loss_node = loss
+            total_loss += loss.data * len(X_batch)
             
-        return loss, metric_str
+            if args.loss in ["mse", "l1"]:
+                total_metric += sum(abs(p.data - y) for p, y in zip(ypred, y_batch))
+            else:
+                for p, y in zip(ypred, y_batch):
+                    if args.loss == "hinge":
+                        pred_label = 1.0 if p.data >= 0 else -1.0
+                        if pred_label == y: total_metric += 1
+                    elif args.loss == "cce":
+                        pred_class = max(range(len(p)), key=lambda i: p[i].data)
+                        if pred_class == int(y): total_metric += 1
+                    else:
+                        if p.data >= 0:
+                            prob = 1.0 / (1.0 + math.exp(-p.data))
+                        else:
+                            z = math.exp(p.data) 
+                            prob = z / (1.0 + z)
+                        if (prob >= args.threshold) == (y >= 0.5): total_metric += 1
+                        
+        avg_loss = total_loss / len(xs)
+        
+        if args.loss in ["mse", "l1"]:
+            metric_str = f"{total_metric / len(xs):.4f}"
+        else:
+            metric_str = f"{(total_metric / len(xs)) * 100:.1f}%"
+            
+        return avg_loss, metric_str, last_loss_node
 
     print(f"Data Split: {len(X_train)} Train | {len(X_val)} Validation")
 
@@ -105,22 +124,22 @@ def train_and_plot(model, X_train, y_train, X_val, y_val, args):
                     X_train, y_train = list(shuffled_X), list(shuffled_y)
 
                 # training
-                train_loss, _ = _run_pass(X_train, y_train, is_training=True)
-                train_losses.append(train_loss.data)
+                train_loss, _, _ = _run_epoch(X_train, y_train, is_training=True)
+                train_losses.append(train_loss)
                 
                 # validation
-                val_loss, val_metric_str = _run_pass(X_val, y_val, is_training=False)
-                val_losses.append(val_loss.data)
+                val_loss, val_metric_str, val_loss_node = _run_epoch(X_val, y_val, is_training=False)
+                val_losses.append(val_loss)
                 
                 # update ui
                 if k % 10 == 0 or k == args.epochs - 1:
-                    table.add_row(f"{k}", f"{train_loss.data:.4f}", f"{val_loss.data:.4f}", val_metric_str)
+                    table.add_row(f"{k}", f"{train_loss:.4f}", f"{val_loss:.4f}", val_metric_str)
                     
                 # early stopping logic
                 min_delta = 1e-4
                 if args.patience > 0:
-                    if val_loss.data < (best_val_loss - min_delta):
-                        best_val_loss = val_loss.data
+                    if val_loss < (best_val_loss - min_delta):
+                        best_val_loss = val_loss
                         trigger_times = 0
                         best_weights = copy.deepcopy(model.state_dict()) 
                     else:
@@ -128,7 +147,7 @@ def train_and_plot(model, X_train, y_train, X_val, y_val, args):
                         
                     if trigger_times >= args.patience:
                         stopped_epoch = k
-                        table.add_row(f"{k} (STOP)", f"{train_loss.data:.4f}", f"{val_loss.data:.4f}", val_metric_str, style="bold red")
+                        table.add_row(f"{k} (STOP)", f"{train_loss:.4f}", f"{val_loss:.4f}", val_metric_str, style="bold red")
                         break
 
     except KeyboardInterrupt:
@@ -166,8 +185,8 @@ def train_and_plot(model, X_train, y_train, X_val, y_val, args):
         model.save(filename=args.save_weights)
         print(f"Model weights successfully saved to {args.save_weights}")
 
-    if val_loss is not None:
-        Utils.export_telemetry(val_loss, filename="telemetry.json")
+    if val_loss_node is not None:
+        Utils.export_telemetry(val_loss_node, filename="telemetry.json")
         
     return train_losses, val_losses
 
@@ -178,6 +197,7 @@ def main():
     # training loop args
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--lr", type=float, default=0.05, help="Learning rate")
+    parser.add_argument("--batch_size", type=int, default=32, help="Batch size for training (0 for full batch)")
     parser.add_argument("--data", type=str, default=None, help="Path to CSV dataset")
     parser.add_argument("--visualize", action="store_true", help="Plot and save loss curve")
     parser.add_argument("--save_weights", type=str, default=None, help="Save model weights")

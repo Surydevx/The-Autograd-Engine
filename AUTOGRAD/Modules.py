@@ -3,7 +3,7 @@ import json
 import os
 from AUTOGRAD.Engine import Value
 
-path_name = "Model"
+path_name = "Model" # the main project directory where all the assets will live related to model.
 
 class Module:
 

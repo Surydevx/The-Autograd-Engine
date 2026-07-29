@@ -117,16 +117,20 @@ def load_csv(filepath):
 # Telemetry
 # =========================================================================================
 
-def export_telemetry(loss_node, filename ):
-    """Captures nodes, edges, values, and gradients for Manim rendering."""
+def export_telemetry(loss_node, filename):
+    """Captures nodes, edges, values, and gradients for Manim rendering iteratively."""
     export_path = os.path.expanduser(path_name)
     os.makedirs(export_path, exist_ok=True)    
     export_path = os.path.join(export_path, filename)
+    
     nodes, edges = [], []
     visited = set()
+    stack = [loss_node]
 
-    def trace(v):
+    while stack:
+        v = stack.pop()
         v_id = id(v)
+        
         if v_id not in visited:
             visited.add(v_id)
             
@@ -139,10 +143,9 @@ def export_telemetry(loss_node, filename ):
             
             for child in getattr(v, '_previous', []):
                 edges.append({"from": str(id(child)), "to": str(v_id)})
-                trace(child)
-
-    trace(loss_node)
+                stack.append(child)
 
     with open(export_path, "w") as f:
         json.dump({"nodes": nodes, "edges": edges}, f, indent=2)
+        
     print(f"Telemetry saved to {filename}")

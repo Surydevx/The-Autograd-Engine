@@ -22,7 +22,7 @@ class Value:
         output_object._backward = _backward
         return output_object
 
-    def __radd__(self, other): # to satsify the commutativity in real numbers under addition.
+    def __radd__(self, other):
         return self + other
 
     def __mul__(self, other):
@@ -68,8 +68,8 @@ class Value:
         output_object._backward = _backward
         return output_object
 
-    def exp(self): # exponential functiona as e^x
-        x = max(min(self.data, 700), -700)    # prevents OverFlowError    
+    def exp(self):
+        x = max(min(self.data, 700), -700)    # prevents OverFlowError.
         output_data = math.exp(x)
         output_object = Value(output_data, (self,), "exp")
 
@@ -79,7 +79,7 @@ class Value:
         output_object._backward = _backward
         return output_object
 
-    def sin(self): # sine function
+    def sin(self):
         x = self.data
         output_data = math.sin(x)
         output_object = Value(output_data, (self,), "sin")
@@ -188,4 +188,7 @@ class Value:
 
     def __rtruediv__(self, other):
         return other * (self ** -1)
+    
+    def __rpow__(self, other):
+        return Value(other) ** self
 # := done says, walrus
