@@ -231,6 +231,6 @@ python dag_visualizer.py --depth 6
 
 If we run the 13-feature dataset on this engine for 100 epochs, it will take roughly 30 - 40 minutes.
 
-Modern frameworks rely on highly optimized C++ backends and parallelized GPU matrices. This engine instantiates, connects, calculates, and garbage-collects *every single mathematical operation* as an individual, pure-Python object and for future implementations the focus would be working on further efficiency of the library.
+Modern frameworks rely on highly optimized C++ backends and parallelized GPU matrices meanwhile this scalar engine instantiates, connects, calculates, and garbage-collects *every single mathematical operation* as an individual, pure-Python object and thus the lag in training model but for future implementations our focus would be working on increasing efficiency of the library.
 
 ### Thanks, Love you :)
