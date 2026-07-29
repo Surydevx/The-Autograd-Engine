@@ -1,0 +1,64 @@
+digraph {
+	graph [rankdir=LR]
+	139808012218256 [label="{ * | data 0.0000 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012220160 [label="{ data 1.0000 | grad 0.0000 }" fillcolor=white shape=record style=filled]
+	139808012220832 [label="{ log | data -0.0852 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012220720 [label="{ + | data 0.9183 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012217920 [label="{ data 1.0000 | grad 0.0000 }" fillcolor=white shape=record style=filled]
+	139808012217584 [label="{ + | data -0.0886 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012217472 [label="{ + | data 0.0000 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012221056 [label="{ + | data -0.0852 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012219152 [label="{ * | data 0.0000 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012221616 [label="{ data -1.0000 | grad 0.0000 }" fillcolor=white shape=record style=filled]
+	139808012221504 [label="{ data 13.0000 | grad 0.0000 }" fillcolor=white shape=record style=filled]
+	139808012217360 [label="{ * | data 0.0000 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012219936 [label="{ log | data -2.5046 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012215792 [label="{ + | data -0.0886 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012219824 [label="{ + | data 0.0817 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012219040 [label="{ log | data -11.3692 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012216464 [label="{ * | data 0.0000 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012221280 [label="{ data -1.0000 | grad 0.0000 }" fillcolor=white shape=record style=filled]
+	139808012221168 [label="{ + | data -0.1738 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012218144 [label="{ log | data 0.0000 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012214000 [label="{ + | data -0.0886 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012220048 [label="{ * | data 0.0000 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012219376 [label="{ + | data -0.0886 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012219264 [label="{ + | data 0.0000 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012221840 [label="{ * | data 0.0134 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012215680 [label="{ + | data 0.0000 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012218368 [label="{ data 0.0000 | grad 0.0000 }" fillcolor=white shape=record style=filled]
+	139808012221392 [label="{ * | data 0.1738 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012219712 [label="{ data 0.0000 | grad 0.0000 }" fillcolor=white shape=record style=filled]
+	139808012221728 [label="{ **-1.0 | data 0.0769 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012220944 [label="{ * | data -0.0852 | grad 0.0000 }" fillcolor=lightblue shape=record style=filled]
+	139808012221728 -> 139808012221840
+	139808012221392 -> 139808012221840
+	139808012221616 -> 139808012221728
+	139808012221504 -> 139808012221728
+	139808012221280 -> 139808012221392
+	139808012221168 -> 139808012221392
+	139808012221056 -> 139808012221168
+	139808012219376 -> 139808012221168
+	139808012220048 -> 139808012221056
+	139808012220944 -> 139808012221056
+	139808012219264 -> 139808012219376
+	139808012217584 -> 139808012219376
+	139808012219936 -> 139808012220048
+	139808012219712 -> 139808012220048
+	139808012220160 -> 139808012220944
+	139808012220832 -> 139808012220944
+	139808012218256 -> 139808012219264
+	139808012219152 -> 139808012219264
+	139808012217472 -> 139808012217584
+	139808012215792 -> 139808012217584
+	139808012219824 -> 139808012219936
+	139808012220720 -> 139808012220832
+	139808012218144 -> 139808012218256
+	139808012217920 -> 139808012218256
+	139808012218368 -> 139808012219152
+	139808012219040 -> 139808012219152
+	139808012216464 -> 139808012217472
+	139808012217360 -> 139808012217472
+	139808012215680 -> 139808012215792
+	139808012214000 -> 139808012215792
+}

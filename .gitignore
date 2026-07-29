@@ -22,11 +22,11 @@ dist/
 *.swo
 
 # generated output & artifacts
-Model/
-*.png
-*.pdf
-*.gv
-*.dot
+#Model/
+#*.png
+#*.pdf
+#*.gv
+#*.dot
 
 # .gitignore is not ignored
 !.gitignore
