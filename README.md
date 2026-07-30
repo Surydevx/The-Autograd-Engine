@@ -143,7 +143,7 @@ The topological map below captures a forward pass of a partial validation batch.
 
 ### Prerequisites
 
-Make sure you have Python >=3.11 installed, [`Graphviz`](https://graphviz.org/download/) binary, ['git'](https://git-scm.com/install/), along with [`uv`](https://docs.astral.sh/uv/#installation) in your local system:
+Make sure you have Python >=3.11 installed, [`Graphviz`](https://graphviz.org/download/) binary, [`git`](https://git-scm.com/install/), along with [`uv`](https://docs.astral.sh/uv/#installation) in your local system:
 
 Clone The repository with the command:
 
