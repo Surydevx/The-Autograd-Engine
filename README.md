@@ -145,7 +145,7 @@ The topological map below captures a forward pass of a partial validation batch.
 
 Make sure you have Python >=3.11 installed,[`Graphviz`](https://graphviz.org/download/) binary,['git'](https://git-scm.com/install/), along with [`uv`](https://docs.astral.sh/uv/#installation) in your local system:
 
-Clone The repository with the command,
+Clone The repository with the command:
 
 ```bash
 git clone https://github.com/Surydevx/The-Autograd-Engine.git
@@ -153,13 +153,13 @@ cd The-Autograd-Engine
 
 ```
 
-Sync the repository using `uv` with command,
+Sync the repository using `uv` with command:
 
 ```Bash
 uv sync
 ```
 
-Activate the virtual environment,
+Activate the virtual environment:
 
 For Linux/MacOS
 
