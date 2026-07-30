@@ -249,4 +249,8 @@ If we run the 13-feature dataset on this engine for 100 epochs, it will take rou
 
 Modern frameworks rely on highly optimized C++ backends and parallelized GPU matrices meanwhile this scalar engine instantiates, connects, calculates, and garbage-collects *every single mathematical operation* as an individual, pure-Python object and thus the lag in training model but for future implementations our focus would be working on increasing efficiency of the library.
 
+## Acknowledgements
+
+* Inspired by Andrej Karpathy's [micrograd](https://github.com/karpathy/micrograd).
+
 ### Thanks, Love you :)
